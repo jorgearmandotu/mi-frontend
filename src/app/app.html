@@ -1,0 +1,11 @@
+@if (auth.isAuthenticated()) {
+  <nav class="nav">
+    <a routerLink="/home">Home</a>
+    <a routerLink="/usuarios">Usuarios</a>
+    <button type="button" (click)="auth.logout()">Cerrar sesión</button>
+  </nav>
+}
+
+<main class="content">
+  <router-outlet />
+</main>

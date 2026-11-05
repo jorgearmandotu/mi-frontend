@@ -1,0 +1,35 @@
+<section>
+  <header class="header">
+    <h1>Usuarios</h1>
+    <button type="button" (click)="usuarios.reload()">Recargar</button>
+  </header>
+
+  @if (usuarios.isLoading()) {
+    <p>Cargando...</p>
+  } @else if (usuarios.error()) {
+    <p class="error">No se pudieron cargar los usuarios.</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (usuario of usuarios.value(); track usuario.id) {
+          <tr>
+            <td>{{ usuario.id }}</td>
+            <td>{{ usuario.nombre }}</td>
+            <td>{{ usuario.email }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="3">Sin resultados.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>
