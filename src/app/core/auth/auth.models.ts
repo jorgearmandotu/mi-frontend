@@ -3,7 +3,18 @@ export interface LoginRequest {
   password: string;
 }
 
-/** Ajusta esta forma al contrato real de tu endpoint de login. */
+export interface AuthenticatedUser {
+  id: number;
+  nombre: string;
+  email: string;
+  rol: string;
+  activo: boolean;
+  fechaCreacion: string;
+}
+
 export interface LoginResponse {
-  token: string;
+  accessToken: string;
+  tokenType: string;
+  expiresAt: string;
+  usuario: AuthenticatedUser;
 }

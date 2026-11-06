@@ -1,0 +1,66 @@
+<section class="empresas-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Directorio</p>
+      <h1>Empresas</h1>
+      <p class="subtitle">Empresas registradas en la plataforma.</p>
+    </div>
+    <a class="add-button" routerLink="/empresas/nueva" aria-label="Agregar empresa">
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+      <span>Nueva empresa</span>
+    </a>
+  </header>
+
+  @if (empresas.isLoading()) {
+    <p class="feedback">Cargando empresas...</p>
+  } @else if (empresas.error()) {
+    <p class="feedback feedback--error" role="alert">No se pudieron cargar las empresas.</p>
+    <button class="secondary-button" type="button" (click)="empresas.reload()">Reintentar</button>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>NIT</th>
+            <th>Empresa</th>
+            <th>Sedes</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (empresa of empresas.value(); track empresa.nit) {
+            <tr>
+              <td class="nit">{{ empresa.nit }}</td>
+              <td>{{ empresa.nombre }}</td>
+              <td>{{ empresa.sedes.length }}</td>
+              <td>
+                <span class="status" [class.status--disabled]="!empresa.habilitada">
+                  {{ empresa.habilitada ? 'Habilitada' : 'Deshabilitada' }}
+                </span>
+              </td>
+            </tr>
+            @if (empresa.sedes.length > 0) {
+              <tr class="locations-row">
+                <td colspan="4">
+                  <span class="locations-label">Direcciones:</span>
+                  @for (sede of empresa.sedes; track sede.direccion; let last = $last) {
+                    <span>{{ sede.direccion }}@if (!last) { · }</span>
+                  }
+                </td>
+              </tr>
+            }
+          } @empty {
+            <tr>
+              <td class="empty-state" colspan="4">
+                <p>Aún no hay empresas registradas.</p>
+                <a routerLink="/empresas/nueva">Agregar la primera empresa</a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

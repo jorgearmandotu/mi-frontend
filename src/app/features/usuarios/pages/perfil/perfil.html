@@ -1,0 +1,35 @@
+<section class="profile">
+  <h1>Editar perfil</h1>
+
+  @if (!auth.user()) {
+    <p class="error">No se pudo identificar tu sesión. Inicia sesión nuevamente.</p>
+  } @else if (perfil.isLoading()) {
+    <p>Cargando perfil...</p>
+  } @else if (perfil.error()) {
+    <p class="error">No se pudo cargar tu perfil.</p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="guardar()">
+      <label>
+        Nombre
+        <input type="text" formControlName="nombre" autocomplete="name" />
+      </label>
+
+      <label>
+        Email
+        <input type="email" formControlName="email" autocomplete="email" />
+      </label>
+
+      @if (errorMessage(); as message) {
+        <p class="error" role="alert">{{ message }}</p>
+      }
+
+      @if (successMessage(); as message) {
+        <p class="success" role="status">{{ message }}</p>
+      }
+
+      <button type="submit" [disabled]="saving()">
+        {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
+      </button>
+    </form>
+  }
+</section>

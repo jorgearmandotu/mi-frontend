@@ -1,11 +1,89 @@
-@if (auth.isAuthenticated()) {
-  <nav class="nav">
-    <a routerLink="/home">Home</a>
-    <a routerLink="/usuarios">Usuarios</a>
-    <button type="button" (click)="auth.logout()">Cerrar sesión</button>
-  </nav>
-}
+<div class="app-shell" [class.light-theme]="!darkMode()">
+  @if (auth.isAuthenticated()) {
+    <aside class="sidebar" [class.sidebar--pinned]="sidebarPinned()">
+      <div class="sidebar-brand">
+        <span class="brand-mark" aria-hidden="true">M</span>
+        <span class="sidebar-label">Mi espacio</span>
+      </div>
 
-<main class="content">
-  <router-outlet />
-</main>
+      <button
+        class="sidebar-pin icon-button"
+        type="button"
+        [attr.aria-label]="sidebarPinned() ? 'Desfijar menú' : 'Fijar menú desplegado'"
+        [attr.aria-pressed]="sidebarPinned()"
+        [title]="sidebarPinned() ? 'Desfijar menú' : 'Fijar menú desplegado'"
+        (click)="toggleSidebarPinned()"
+      >
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m16 3 5 5-4 1-4 4 3 3-2 2-3-3-4 4-1 4-5-5 4-1 4-4-3-3 2-2 3 3 4-4z" />
+        </svg>
+      </button>
+
+      <nav class="side-nav" aria-label="Navegación principal">
+        <a routerLink="/home" routerLinkActive="nav-link--active" ariaCurrentWhenActive="page" class="nav-link" title="Inicio">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 10 9-7 9 7" />
+            <path d="M5 9v12h14V9M9 21v-7h6v7" />
+          </svg>
+          <span class="sidebar-label">Inicio</span>
+        </a>
+        <a routerLink="/usuarios" routerLinkActive="nav-link--active" ariaCurrentWhenActive="page" class="nav-link" title="Usuarios">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="8" r="3.5" />
+            <path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 5.2a3.5 3.5 0 0 1 0 6.6M18 14a5.5 5.5 0 0 1 3.5 5" />
+          </svg>
+          <span class="sidebar-label">Usuarios</span>
+        </a>
+        <a routerLink="/empresas" routerLinkActive="nav-link--active" ariaCurrentWhenActive="page" class="nav-link" title="Empresas">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 21h18M5 21V5l7-3v19M19 21V9l-7-4" />
+            <path d="M8 7v.01M8 11v.01M8 15v.01M15 11v.01M15 15v.01M12 21v-4h3" />
+          </svg>
+          <span class="sidebar-label">Empresas</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button
+          class="nav-link theme-toggle"
+          type="button"
+          [attr.aria-label]="darkMode() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+          [title]="darkMode() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+          (click)="toggleDarkMode()"
+        >
+          @if (darkMode()) {
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" />
+            </svg>
+            <span class="sidebar-label">Modo claro</span>
+          } @else {
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z" />
+            </svg>
+            <span class="sidebar-label">Modo oscuro</span>
+          }
+        </button>
+
+        <details class="user-menu">
+          <summary class="nav-link" aria-label="Abrir menú de usuario" [title]="userFirstName()">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="3.5" />
+              <path d="M5 20a7 7 0 0 1 14 0" />
+            </svg>
+            <span class="sidebar-label">{{ userFirstName() }}</span>
+          </summary>
+          <div class="menu-options">
+            <p class="user-name">{{ userFirstName() }}</p>
+            <a routerLink="/perfil">Editar perfil</a>
+            <button type="button" (click)="auth.logout()">Cerrar sesión</button>
+          </div>
+        </details>
+      </div>
+    </aside>
+  }
+
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

@@ -14,6 +14,17 @@ export class UsuariosService {
     return httpResource<Usuario[]>(() => this.apiUrl, { defaultValue: [] });
   }
 
+  obtenerPerfil(id: () => number | undefined) {
+    return httpResource<Usuario>(() => {
+      const usuarioId = id();
+      return usuarioId === undefined ? undefined : `${this.apiUrl}/${usuarioId}`;
+    });
+  }
+
+  actualizarPerfil(id: number, perfil: Pick<Usuario, 'nombre' | 'email'>) {
+    return this.http.put<Usuario>(`${this.apiUrl}/${id}`, perfil);
+  }
+
   /** Las escrituras (POST/PUT/DELETE) usan HttpClient y devuelven Observable. */
   crear(usuario: Omit<Usuario, 'id'>) {
     return this.http.post<Usuario>(this.apiUrl, usuario);

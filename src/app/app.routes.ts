@@ -18,5 +18,17 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./features/usuarios/usuarios.routes').then((m) => m.USUARIOS_ROUTES),
   },
+  {
+    path: 'empresas',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/empresas/empresas.routes').then((m) => m.EMPRESAS_ROUTES),
+  },
+  {
+    path: 'perfil',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/usuarios/pages/perfil/perfil').then((m) => m.Perfil),
+  },
   { path: '**', redirectTo: 'home' },
 ];

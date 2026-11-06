@@ -1,0 +1,70 @@
+<section class="form-page">
+  <a class="back-link" routerLink="/empresas">← Volver a empresas</a>
+  <header class="page-header">
+    <p class="eyebrow">Directorio</p>
+    <h1>Nueva empresa</h1>
+    <p class="subtitle">Completa los datos para registrar una empresa.</p>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="guardar()">
+    <div class="form-grid">
+      <label>
+        NIT
+        <input type="text" formControlName="nit" autocomplete="off" />
+        @if (form.controls.nit.touched && form.controls.nit.hasError('required')) {
+          <span class="field-error">El NIT es obligatorio.</span>
+        }
+      </label>
+
+      <label>
+        Nombre de la empresa
+        <input type="text" formControlName="nombre" autocomplete="organization" />
+        @if (form.controls.nombre.touched && form.controls.nombre.hasError('required')) {
+          <span class="field-error">El nombre es obligatorio.</span>
+        }
+      </label>
+    </div>
+
+    <fieldset formArrayName="sedes">
+      <legend>Sedes</legend>
+      @for (sede of sedes.controls; track sede; let index = $index) {
+        <div class="sede-row" [formGroupName]="index">
+          <label>
+            Dirección de la sede {{ index + 1 }}
+            <input type="text" formControlName="direccion" autocomplete="street-address" />
+            @if (sede.controls.direccion.touched && sede.controls.direccion.hasError('required')) {
+              <span class="field-error">La dirección es obligatoria.</span>
+            }
+          </label>
+          <button
+            class="remove-button"
+            type="button"
+            [attr.aria-label]="'Quitar sede ' + (index + 1)"
+            (click)="quitarSede(index)"
+          >
+            Quitar
+          </button>
+        </div>
+      }
+      <button class="add-location" type="button" (click)="agregarSede()">
+        <span aria-hidden="true">+</span> Agregar sede
+      </button>
+    </fieldset>
+
+    <label class="checkbox-field">
+      <input type="checkbox" formControlName="habilitada" />
+      <span>Empresa habilitada</span>
+    </label>
+
+    @if (errorMessage(); as message) {
+      <p class="form-error" role="alert">{{ message }}</p>
+    }
+
+    <div class="form-actions">
+      <a class="cancel-button" routerLink="/empresas">Cancelar</a>
+      <button class="submit-button" type="submit" [disabled]="saving()">
+        {{ saving() ? 'Guardando...' : 'Guardar empresa' }}
+      </button>
+    </div>
+  </form>
+</section>
