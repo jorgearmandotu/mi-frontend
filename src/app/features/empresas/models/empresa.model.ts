@@ -3,6 +3,7 @@ export interface Sede {
 }
 
 export interface Empresa {
+  id: number;
   nit: string;
   nombre: string;
   sedes: Sede[];

@@ -27,6 +27,7 @@
             <th>Empresa</th>
             <th>Sedes</th>
             <th>Estado</th>
+            <th>Servidores</th>
           </tr>
         </thead>
         <tbody>
@@ -40,10 +41,270 @@
                   {{ empresa.habilitada ? 'Habilitada' : 'Deshabilitada' }}
                 </span>
               </td>
+              <td>
+                <button
+                  class="servers-button"
+                  type="button"
+                  [attr.aria-expanded]="empresaSeleccionadaId() === empresa.id"
+                  (click)="alternarServidores(empresa.id)"
+                >
+                  {{ empresaSeleccionadaId() === empresa.id ? 'Ocultar' : 'Ver servidores' }}
+                </button>
+              </td>
             </tr>
+            @if (empresaSeleccionadaId() === empresa.id) {
+              <tr class="servers-row">
+                <td colspan="5">
+                  <section class="servers-panel" [attr.aria-label]="'Servidores de ' + empresa.nombre">
+                    <h2>Servidores de {{ empresa.nombre }}</h2>
+                    <button class="add-server-button" type="button" (click)="alternarFormularioServidor()">
+                      {{ mostrarFormularioServidor() ? 'Cancelar nuevo servidor' : 'Agregar servidor' }}
+                    </button>
+
+                    @if (mensajeServidor()) {
+                      <p class="feedback feedback--success" role="status">{{ mensajeServidor() }}</p>
+                    }
+
+                    @if (mostrarFormularioServidor()) {
+                      @if (opcionesServidor.isLoading()) {
+                        <p class="feedback">Cargando opciones del formulario...</p>
+                      } @else if (opcionesServidor.error()) {
+                        <p class="feedback feedback--error" role="alert">
+                          No se pudieron cargar las opciones para el servidor.
+                        </p>
+                        <button class="secondary-button" type="button" (click)="opcionesServidor.reload()">
+                          Reintentar
+                        </button>
+                      } @else if (opcionesServidor.value(); as opciones) {
+                        <form class="server-form" [formGroup]="servidorForm" (ngSubmit)="guardarServidor()">
+                          <h3>Nuevo servidor</h3>
+                          <div class="server-form-grid">
+                            <label>
+                              Nombre
+                              <input type="text" formControlName="nombre" />
+                              @if (servidorForm.controls.nombre.touched && servidorForm.controls.nombre.hasError('required')) {
+                                <span class="feedback--error">El nombre es obligatorio.</span>
+                              }
+                            </label>
+                            <label>
+                              Naturaleza
+                              <select
+                                formControlName="naturaleza"
+                                (change)="actualizarTipoGestionHardware()"
+                              >
+                                <option value="" disabled>Selecciona una naturaleza</option>
+                                @for (naturaleza of opciones.naturalezasServidor; track naturaleza) {
+                                  <option [value]="naturaleza">{{ naturaleza }}</option>
+                                }
+                              </select>
+                              @if (servidorForm.controls.naturaleza.touched && servidorForm.controls.naturaleza.hasError('required')) {
+                                <span class="feedback--error">Selecciona la naturaleza del servidor.</span>
+                              }
+                            </label>
+                            <label>
+                              Plataforma
+                              <input type="text" formControlName="plataforma" />
+                              @if (servidorForm.controls.plataforma.touched && servidorForm.controls.plataforma.hasError('required')) {
+                                <span class="feedback--error">La plataforma es obligatoria.</span>
+                              }
+                            </label>
+                            <label>
+                              Versión del sistema operativo
+                              <input type="text" formControlName="versionSistemaOperativo" />
+                              @if (servidorForm.controls.versionSistemaOperativo.touched && servidorForm.controls.versionSistemaOperativo.hasError('required')) {
+                                <span class="feedback--error">La versión del sistema operativo es obligatoria.</span>
+                              }
+                            </label>
+                            <label>
+                              Núcleos
+                              <input type="number" min="0" step="1" formControlName="nucleos" />
+                              @if (servidorForm.controls.nucleos.touched && servidorForm.controls.nucleos.hasError('required')) {
+                                <span class="feedback--error">Indica la cantidad de núcleos.</span>
+                              }
+                            </label>
+                            <label>
+                              RAM (GB)
+                              <input type="number" min="0" step="any" formControlName="ramGb" />
+                              @if (servidorForm.controls.ramGb.touched && servidorForm.controls.ramGb.hasError('required')) {
+                                <span class="feedback--error">Indica la cantidad de RAM.</span>
+                              }
+                            </label>
+                            <label>
+                              Servidor anfitrión
+                              @if (servidoresFisicos.isLoading()) {
+                                <span class="feedback">Cargando servidores físicos...</span>
+                              } @else if (servidoresFisicos.error()) {
+                                <span class="feedback--error" role="alert">
+                                  No se pudieron cargar los servidores físicos.
+                                </span>
+                                <button
+                                  class="secondary-button"
+                                  type="button"
+                                  (click)="servidoresFisicos.reload()"
+                                >
+                                  Reintentar
+                                </button>
+                              } @else {
+                                <select formControlName="servidorAnfitrionId">
+                                  <option [ngValue]="0">Sin servidor anfitrión</option>
+                                  @for (servidorFisico of servidoresFisicos.value(); track servidorFisico.id) {
+                                    <option [ngValue]="servidorFisico.id">
+                                      {{ servidorFisico.nombre }}
+                                    </option>
+                                  }
+                                </select>
+                              }
+                            </label>
+                            @if (servidorForm.controls.naturaleza.value === 'Fisico') {
+                              <label>
+                                Tipo de gestión de hardware
+                                <select formControlName="tipoGestionHardware">
+                                  <option value="" disabled>Selecciona un tipo</option>
+                                  @for (tipo of opciones.tiposGestionHardware; track tipo) {
+                                    <option [value]="tipo">{{ tipo }}</option>
+                                  }
+                                </select>
+                                @if (servidorForm.controls.tipoGestionHardware.touched && servidorForm.controls.tipoGestionHardware.hasError('required')) {
+                                  <span class="feedback--error">Selecciona un tipo de gestión para el servidor físico.</span>
+                                }
+                              </label>
+                            }
+                            <label>
+                              IP de gestión de hardware
+                              <input type="text" formControlName="ipGestionHardware" />
+                            </label>
+                            <label class="server-form-wide">
+                              Datos opcionales
+                              <textarea rows="3" formControlName="datosOpcionales"></textarea>
+                            </label>
+                          </div>
+
+                          <div class="interfaces-form" formArrayName="interfacesRed">
+                            <h4>Interfaces de red</h4>
+                            @for (interfaz of interfacesRed.controls; track interfaz; let interfazIndex = $index) {
+                              <fieldset [formGroupName]="interfazIndex">
+                                <legend>Interfaz {{ interfazIndex + 1 }}</legend>
+                                <div class="server-form-grid">
+                                  <label>
+                                    Nombre
+                                    <input type="text" formControlName="nombre" />
+                                    @if (interfaz.controls.nombre.touched && interfaz.controls.nombre.hasError('required')) {
+                                      <span class="feedback--error">El nombre de la interfaz es obligatorio.</span>
+                                    }
+                                  </label>
+                                  <label>
+                                    Dirección MAC
+                                    <input type="text" formControlName="direccionMac" />
+                                  </label>
+                                </div>
+                                <div class="ips-form" formArrayName="direccionesIp">
+                                  <span class="field-label">Direcciones IP</span>
+                                  @for (ip of direccionesIp(interfaz).controls; track ip; let ipIndex = $index) {
+                                    <div class="ip-form-row" [formGroupName]="ipIndex">
+                                      <label>
+                                        Dirección
+                                        <input type="text" formControlName="direccion" />
+                                      </label>
+                                      <button
+                                        class="secondary-button"
+                                        type="button"
+                                        [disabled]="direccionesIp(interfaz).length === 1"
+                                        (click)="quitarDireccionIp(interfaz, ipIndex)"
+                                      >
+                                        Quitar IP
+                                      </button>
+                                    </div>
+                                  }
+                                  <button class="secondary-button" type="button" (click)="agregarDireccionIp(interfaz)">
+                                    Agregar IP
+                                  </button>
+                                </div>
+                                <button
+                                  class="secondary-button"
+                                  type="button"
+                                  [disabled]="interfacesRed.length === 1"
+                                  (click)="quitarInterfazRed(interfazIndex)"
+                                >
+                                  Quitar interfaz
+                                </button>
+                              </fieldset>
+                            }
+                            <button class="secondary-button" type="button" (click)="agregarInterfazRed()">
+                              Agregar interfaz
+                            </button>
+                          </div>
+
+                          @if (errorServidor()) {
+                            <p class="feedback feedback--error" role="alert">{{ errorServidor() }}</p>
+                          }
+                          <div class="server-form-actions">
+                            <button
+                              class="add-server-button"
+                              type="submit"
+                              [disabled]="guardandoServidor()"
+                            >
+                              {{ guardandoServidor() ? 'Guardando...' : 'Guardar servidor' }}
+                            </button>
+                          </div>
+                        </form>
+                      }
+                    }
+
+                    @if (servidores.isLoading()) {
+                      <p class="feedback">Cargando servidores...</p>
+                    } @else if (servidores.error()) {
+                      <p class="feedback feedback--error" role="alert">
+                        No se pudieron cargar los servidores de esta empresa.
+                      </p>
+                      <button class="secondary-button" type="button" (click)="servidores.reload()">
+                        Reintentar
+                      </button>
+                    } @else {
+                      @for (servidor of servidores.value(); track servidor.id) {
+                        <article class="server-card">
+                          <h3>{{ servidor.nombre }}</h3>
+                          <dl class="server-details">
+                            <div><dt>ID del servidor</dt><dd>{{ servidor.id }}</dd></div>
+                            <div><dt>ID de empresa</dt><dd>{{ servidor.empresaId }}</dd></div>
+                            <div><dt>Naturaleza</dt><dd>{{ servidor.naturaleza }}</dd></div>
+                            <div><dt>Plataforma</dt><dd>{{ servidor.plataforma }}</dd></div>
+                            <div><dt>Sistema operativo</dt><dd>{{ servidor.versionSistemaOperativo }}</dd></div>
+                            <div><dt>Núcleos</dt><dd>{{ servidor.nucleos }}</dd></div>
+                            <div><dt>RAM</dt><dd>{{ servidor.ramGb }} GB</dd></div>
+                            <div><dt>Gestión de hardware</dt><dd>{{ servidor.tipoGestionHardware }}</dd></div>
+                            <div><dt>IP de gestión</dt><dd>{{ servidor.ipGestionHardware }}</dd></div>
+                            <div><dt>Servidor anfitrión</dt><dd>{{ servidor.nombreServidorAnfitrion }} (ID {{ servidor.servidorAnfitrionId }})</dd></div>
+                            <div><dt>Datos opcionales</dt><dd>{{ servidor.datosOpcionales }}</dd></div>
+                          </dl>
+                          <h4>Interfaces de red</h4>
+                          @for (interfaz of servidor.interfacesRed; track interfaz.id) {
+                            <div class="network-interface">
+                              <strong>{{ interfaz.nombre }}</strong>
+                              <span>MAC: {{ interfaz.direccionMac }}</span>
+                              <span>
+                                IP:
+                                @for (direccion of interfaz.direccionesIp; track direccion.id; let last = $last) {
+                                  {{ direccion.direccion }}@if (!last) {, }
+                                } @empty {
+                                  Sin direcciones IP
+                                }
+                              </span>
+                            </div>
+                          } @empty {
+                            <p class="feedback">Este servidor no tiene interfaces de red registradas.</p>
+                          }
+                        </article>
+                      } @empty {
+                        <p class="feedback">Esta empresa no tiene servidores vinculados.</p>
+                      }
+                    }
+                  </section>
+                </td>
+              </tr>
+            }
             @if (empresa.sedes.length > 0) {
               <tr class="locations-row">
-                <td colspan="4">
+                <td colspan="5">
                   <span class="locations-label">Direcciones:</span>
                   @for (sede of empresa.sedes; track sede.direccion; let last = $last) {
                     <span>{{ sede.direccion }}@if (!last) { · }</span>
@@ -53,7 +314,7 @@
             }
           } @empty {
             <tr>
-              <td class="empty-state" colspan="4">
+              <td class="empty-state" colspan="5">
                 <p>Aún no hay empresas registradas.</p>
                 <a routerLink="/empresas/nueva">Agregar la primera empresa</a>
               </td>
